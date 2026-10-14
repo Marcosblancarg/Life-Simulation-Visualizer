@@ -1,0 +1,321 @@
+{
+    "title": "Evolución de Boids - Multi-Especie",
+    "description": "Simulación de vida artificial con 4 especies configurables.",
+    "file": "index.html",
+    "preview": "preview.jpg",
+    "general": {
+        "properties": {
+            "schemecolor": {
+                "title": "UI Theme Color",
+                "type": "color",
+                "value": "0 0 0"
+            }
+        }
+    },
+    "properties": {
+        "s1_color": {
+            "text": "Color",
+            "type": "color",
+            "value": "1 0 0.33",
+            "group": "Species 1 (Red)"
+        },
+        "s1_count": {
+            "text": "Population",
+            "type": "slider",
+            "min": 0,
+            "max": 1000,
+            "value": 300,
+            "step": 10,
+            "group": "Species 1 (Red)"
+        },
+        "s1_speed": {
+            "text": "Max Speed",
+            "type": "slider",
+            "min": 1,
+            "max": 15,
+            "value": 4,
+            "step": 0.1,
+            "group": "Species 1 (Red)"
+        },
+        "s1_size": {
+            "text": "Size",
+            "type": "slider",
+            "min": 1,
+            "max": 10,
+            "value": 2,
+            "step": 0.5,
+            "group": "Species 1 (Red)"
+        },
+        "s1_perception": {
+            "text": "Perception Radius",
+            "type": "slider",
+            "min": 10,
+            "max": 200,
+            "value": 50,
+            "group": "Species 1 (Red)"
+        },
+        "s1_trail": {
+            "text": "Trail Length",
+            "type": "slider",
+            "min": 0,
+            "max": 100,
+            "value": 20,
+            "group": "Species 1 (Red)"
+        },
+        "s1_align": {
+            "text": "Alignment",
+            "type": "slider",
+            "min": 0,
+            "max": 5,
+            "value": 1.0,
+            "step": 0.1,
+            "group": "Species 1 (Red)"
+        },
+        "s1_cohesion": {
+            "text": "Cohesion",
+            "type": "slider",
+            "min": 0,
+            "max": 5,
+            "value": 0.8,
+            "step": 0.1,
+            "group": "Species 1 (Red)"
+        },
+        "s1_separation": {
+            "text": "Separation",
+            "type": "slider",
+            "min": 0,
+            "max": 5,
+            "value": 1.5,
+            "step": 0.1,
+            "group": "Species 1 (Red)"
+        },
+        "s2_color": {
+            "text": "Color",
+            "type": "color",
+            "value": "0 1 1",
+            "group": "Species 2 (Cyan)"
+        },
+        "s2_count": {
+            "text": "Population",
+            "type": "slider",
+            "min": 0,
+            "max": 1000,
+            "value": 300,
+            "step": 10,
+            "group": "Species 2 (Cyan)"
+        },
+        "s2_speed": {
+            "text": "Max Speed",
+            "type": "slider",
+            "min": 1,
+            "max": 15,
+            "value": 2,
+            "step": 0.1,
+            "group": "Species 2 (Cyan)"
+        },
+        "s2_size": {
+            "text": "Size",
+            "type": "slider",
+            "min": 1,
+            "max": 10,
+            "value": 3,
+            "step": 0.5,
+            "group": "Species 2 (Cyan)"
+        },
+        "s2_perception": {
+            "text": "Perception Radius",
+            "type": "slider",
+            "min": 10,
+            "max": 200,
+            "value": 80,
+            "group": "Species 2 (Cyan)"
+        },
+        "s2_trail": {
+            "text": "Trail Length",
+            "type": "slider",
+            "min": 0,
+            "max": 100,
+            "value": 40,
+            "group": "Species 2 (Cyan)"
+        },
+        "s2_align": {
+            "text": "Alignment",
+            "type": "slider",
+            "min": 0,
+            "max": 5,
+            "value": 1.5,
+            "step": 0.1,
+            "group": "Species 2 (Cyan)"
+        },
+        "s2_cohesion": {
+            "text": "Cohesion",
+            "type": "slider",
+            "min": 0,
+            "max": 5,
+            "value": 1.2,
+            "step": 0.1,
+            "group": "Species 2 (Cyan)"
+        },
+        "s2_separation": {
+            "text": "Separation",
+            "type": "slider",
+            "min": 0,
+            "max": 5,
+            "value": 1.0,
+            "step": 0.1,
+            "group": "Species 2 (Cyan)"
+        },
+        "s3_color": {
+            "text": "Color",
+            "type": "color",
+            "value": "1 1 0",
+            "group": "Species 3 (Yellow)"
+        },
+        "s3_count": {
+            "text": "Population",
+            "type": "slider",
+            "min": 0,
+            "max": 1000,
+            "value": 300,
+            "step": 10,
+            "group": "Species 3 (Yellow)"
+        },
+        "s3_speed": {
+            "text": "Max Speed",
+            "type": "slider",
+            "min": 1,
+            "max": 15,
+            "value": 6,
+            "step": 0.1,
+            "group": "Species 3 (Yellow)"
+        },
+        "s3_size": {
+            "text": "Size",
+            "type": "slider",
+            "min": 1,
+            "max": 10,
+            "value": 1.5,
+            "step": 0.5,
+            "group": "Species 3 (Yellow)"
+        },
+        "s3_perception": {
+            "text": "Perception Radius",
+            "type": "slider",
+            "min": 10,
+            "max": 200,
+            "value": 30,
+            "group": "Species 3 (Yellow)"
+        },
+        "s3_trail": {
+            "text": "Trail Length",
+            "type": "slider",
+            "min": 0,
+            "max": 100,
+            "value": 10,
+            "group": "Species 3 (Yellow)"
+        },
+        "s3_align": {
+            "text": "Alignment",
+            "type": "slider",
+            "min": 0,
+            "max": 5,
+            "value": 0.5,
+            "step": 0.1,
+            "group": "Species 3 (Yellow)"
+        },
+        "s3_cohesion": {
+            "text": "Cohesion",
+            "type": "slider",
+            "min": 0,
+            "max": 5,
+            "value": 0.5,
+            "step": 0.1,
+            "group": "Species 3 (Yellow)"
+        },
+        "s3_separation": {
+            "text": "Separation",
+            "type": "slider",
+            "min": 0,
+            "max": 5,
+            "value": 2.0,
+            "step": 0.1,
+            "group": "Species 3 (Yellow)"
+        },
+        "s4_color": {
+            "text": "Color",
+            "type": "color",
+            "value": "1 1 1",
+            "group": "Species 4 (White)"
+        },
+        "s4_count": {
+            "text": "Population",
+            "type": "slider",
+            "min": 0,
+            "max": 1000,
+            "value": 300,
+            "step": 10,
+            "group": "Species 4 (White)"
+        },
+        "s4_speed": {
+            "text": "Max Speed",
+            "type": "slider",
+            "min": 1,
+            "max": 15,
+            "value": 3,
+            "step": 0.1,
+            "group": "Species 4 (White)"
+        },
+        "s4_size": {
+            "text": "Size",
+            "type": "slider",
+            "min": 1,
+            "max": 10,
+            "value": 2,
+            "step": 0.5,
+            "group": "Species 4 (White)"
+        },
+        "s4_perception": {
+            "text": "Perception Radius",
+            "type": "slider",
+            "min": 10,
+            "max": 200,
+            "value": 60,
+            "group": "Species 4 (White)"
+        },
+        "s4_trail": {
+            "text": "Trail Length",
+            "type": "slider",
+            "min": 0,
+            "max": 100,
+            "value": 15,
+            "group": "Species 4 (White)"
+        },
+        "s4_align": {
+            "text": "Alignment",
+            "type": "slider",
+            "min": 0,
+            "max": 5,
+            "value": 1.0,
+            "step": 0.1,
+            "group": "Species 4 (White)"
+        },
+        "s4_cohesion": {
+            "text": "Cohesion",
+            "type": "slider",
+            "min": 0,
+            "max": 5,
+            "value": 1.0,
+            "step": 0.1,
+            "group": "Species 4 (White)"
+        },
+        "s4_separation": {
+            "text": "Separation",
+            "type": "slider",
+            "min": 0,
+            "max": 5,
+            "value": 1.0,
+            "step": 0.1,
+            "group": "Species 4 (White)"
+        }
+    }
+}

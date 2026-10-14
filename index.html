@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evolución de Boids - Multi-Especie</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #050505;
+            overflow: hidden;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        /* Control Panel Styles */
+        #controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 280px;
+            background: rgba(10, 10, 10, 0.9);
+            color: #00ffff;
+            padding: 15px;
+            border-radius: 4px;
+            border: 1px solid #333;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            display: none;
+            user-select: none;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #333;
+        }
+
+        .tab-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #666;
+            padding: 8px 0;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: bold;
+            transition: 0.2s;
+            border-bottom: 2px solid transparent;
+        }
+
+        .tab-btn:hover {
+            color: #aaa;
+        }
+
+        .tab-btn.active {
+            color: #fff;
+            border-bottom: 2px solid #fff;
+        }
+
+        /* Color Input wrapper */
+        .color-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #222;
+        }
+
+        input[type="color"] {
+            background: none;
+            border: none;
+            width: 40px;
+            height: 30px;
+            cursor: pointer;
+        }
+
+        #controls h3 {
+            margin: 0 0 10px 0;
+            color: #fff;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .control-group {
+            margin-bottom: 10px;
+        }
+
+        .control-group label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            margin-bottom: 3px;
+            color: #ccc;
+        }
+
+        .control-group input[type="range"] {
+            width: 100%;
+            height: 4px;
+            background: #333;
+            border-radius: 2px;
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        /* Dynamic Slider Colors handled by JS or simple CSS */
+        .control-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            background: #fff;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .hint {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 12px;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="canvas"></canvas>
+
+    <div class="hint">Press 'C' to Toggle Controls | Press 'R' to Restart</div>
+
+    <div id="controls">
+        <h3>Species Control</h3>
+
+        <div class="tabs" id="speciesTabs">
+            <button class="tab-btn active" data-idx="0">1</button>
+            <button class="tab-btn" data-idx="1">2</button>
+            <button class="tab-btn" data-idx="2">3</button>
+            <button class="tab-btn" data-idx="3">4</button>
+        </div>
+
+        <div class="color-row">
+            <span style="font-size: 12px; color: #ccc;">COLOR</span>
+            <input type="color" id="speciesColor" value="#ff0055">
+        </div>
+
+        <div class="control-group">
+            <label>Population: <span id="val-pop">300</span></label>
+            <!-- Note: changing population requires re-init, implemented simply -->
+            <input type="range" id="param-count" min="0" max="1000" step="50" value="300">
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid #333; margin: 10px 0;">
+
+        <div class="control-group">
+            <label>Max Speed: <span id="val-speed">3</span></label>
+            <input type="range" id="param-maxSpeed" min="1" max="15" step="0.1" value="3">
+        </div>
+
+        <div class="control-group">
+            <label>Perception Radius: <span id="val-perception">40</span></label>
+            <input type="range" id="param-perception" min="10" max="200" step="1" value="40">
+        </div>
+
+        <div class="control-group">
+            <label>Size: <span id="val-size">2</span></label>
+            <input type="range" id="param-size" min="1" max="10" step="0.5" value="2">
+        </div>
+
+        <div class="control-group">
+            <label>Trail Length: <span id="val-trail">15</span></label>
+            <input type="range" id="param-trailLength" min="0" max="100" step="1" value="15">
+        </div>
+
+        <div class="control-group">
+            <label>Alignment: <span id="val-align">1.0</span></label>
+            <input type="range" id="param-align" min="0" max="5.0" step="0.1" value="1.0">
+        </div>
+
+        <div class="control-group">
+            <label>Cohesion: <span id="val-cohesion">0.8</span></label>
+            <input type="range" id="param-cohesion" min="0" max="5.0" step="0.1" value="0.8">
+        </div>
+
+        <div class="control-group">
+            <label>Separation: <span id="val-separation">1.2</span></label>
+            <input type="range" id="param-separation" min="0" max="5.0" step="0.1" value="1.2">
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        // --- Configuración Multi-Especie ---
+        // Definimos 4 grupos por defecto
+        const defaultConfigs = [
+            { color: '#ff0055', count: 300, size: 2, maxSpeed: 4, perception: 50, trailLength: 20, align: 1.0, cohesion: 0.8, separation: 1.5 }, // Rojo Rápido
+            { color: '#00ffff', count: 300, size: 3, maxSpeed: 2, perception: 80, trailLength: 40, align: 1.5, cohesion: 1.2, separation: 1.0 }, // Cyan Lento/Largo
+            { color: '#ffff00', count: 300, size: 1.5, maxSpeed: 6, perception: 30, trailLength: 10, align: 0.5, cohesion: 0.5, separation: 2.0 }, // Amarillo Caótico
+            { color: '#ffffff', count: 300, size: 2, maxSpeed: 3, perception: 60, trailLength: 15, align: 1.0, cohesion: 1.0, separation: 1.0 }  // Blanco Equilibrado
+        ];
+
+        let speciesData = JSON.parse(JSON.stringify(defaultConfigs)); // Deep copy
+        let activeSpeciesIdx = 0;
+
+        // --- UI Logic ---
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const colorInput = document.getElementById('speciesColor');
+
+        // Mapeo de IDs de inputs a propiedades del objeto config
+        const inputs = {
+            'param-count': 'count',
+            'param-size': 'size',
+            'param-maxSpeed': 'maxSpeed',
+            'param-perception': 'perception',
+            'param-trailLength': 'trailLength',
+            'param-align': 'align',
+            'param-cohesion': 'cohesion',
+            'param-separation': 'separation'
+        };
+
+        // Función para actualizar la UI con los valores de la especie activa
+        function updateUI() {
+            const config = speciesData[activeSpeciesIdx];
+
+            // Color
+            colorInput.value = config.color;
+
+            // Tabs styles
+            tabBtns.forEach(btn => {
+                if (parseInt(btn.dataset.idx) === activeSpeciesIdx) {
+                    btn.classList.add('active');
+                    btn.style.borderBottomColor = config.color; // El tab toma el color de la especie
+                    btn.style.color = '#fff';
+                } else {
+                    btn.classList.remove('active');
+                    btn.style.borderBottomColor = 'transparent';
+                    btn.style.color = '#666';
+                }
+            });
+
+            // Sliders
+            for (let id in inputs) {
+                const prop = inputs[id];
+                const el = document.getElementById(id);
+                // Val display logic is slightly hacked in listener but needed here for initialization
+                // We find the 'span' inside the label tag which is the previous sibling of the input's parent? No.
+                // Structure: .control-group > label > span
+                const labelSnap = el.parentElement.querySelector('span');
+
+                el.value = config[prop];
+                if (labelSnap) labelSnap.innerText = config[prop];
+            }
+        }
+
+        // Event Listeners UI
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                activeSpeciesIdx = parseInt(btn.dataset.idx);
+                updateUI();
+            });
+        });
+
+        colorInput.addEventListener('input', (e) => {
+            speciesData[activeSpeciesIdx].color = e.target.value;
+            updateUI(); // Para actualizar borde del tab
+        });
+
+        for (let id in inputs) {
+            const prop = inputs[id];
+            const el = document.getElementById(id);
+
+            el.addEventListener('input', (e) => {
+                let val = parseFloat(e.target.value);
+                speciesData[activeSpeciesIdx][prop] = val;
+
+                // Update display text
+                const labelSnap = el.parentElement.querySelector('span');
+                if (labelSnap) labelSnap.innerText = val;
+
+                // Si cambiamos población, hay que reinicializar (complejo, lo haremos simple: respawn specie)
+                if (prop === 'count') {
+                    initSpecies(activeSpeciesIdx);
+                }
+            });
+        }
+
+        // Toggle Panel & Restart
+        document.addEventListener('keydown', (e) => {
+            const key = e.key.toLowerCase();
+            if (key === 'c') {
+                const panel = document.getElementById('controls');
+                panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+            }
+            if (key === 'r') {
+                initAll(); // Reiniciar manteniendo configuración actual
+            }
+        });
+
+
+        // --- Simulation Logic ---
+
+        // Grid Espacial Global (compartido por todas las especies para interacción)
+        class SpatialGrid {
+            constructor() {
+                this.grid = {};
+                this.cellSize = 50;
+            }
+            clear() { this.grid = {}; }
+            add(boid) {
+                const cx = Math.floor(boid.pos.x / this.cellSize);
+                const cy = Math.floor(boid.pos.y / this.cellSize);
+                const key = `${cx},${cy}`;
+                if (!this.grid[key]) this.grid[key] = [];
+                this.grid[key].push(boid);
+            }
+            getNeighbors(boid) {
+                const cx = Math.floor(boid.pos.x / this.cellSize);
+                const cy = Math.floor(boid.pos.y / this.cellSize);
+                let neighbors = [];
+                for (let x = cx - 1; x <= cx + 1; x++) {
+                    for (let y = cy - 1; y <= cy + 1; y++) {
+                        const cell = this.grid[`${x},${y}`];
+                        if (cell) {
+                            for (let other of cell) {
+                                if (other !== boid) {
+                                    neighbors.push(other);
+                                }
+                            }
+                        }
+                    }
+                }
+                return neighbors;
+            }
+        }
+        const grid = new SpatialGrid();
+
+        class Vector {
+            constructor(x, y) { this.x = x; this.y = y; }
+            add(v) { this.x += v.x; this.y += v.y; return this; }
+            sub(v) { this.x -= v.x; this.y -= v.y; return this; }
+            mult(n) { this.x *= n; this.y *= n; return this; }
+            div(n) { this.x /= n; this.y /= n; return this; }
+            mag() { return Math.sqrt(this.x * this.x + this.y * this.y); }
+            setMag(n) { return this.mag() === 0 ? this : this.div(this.mag()).mult(n); }
+            limit(max) { if (this.mag() > max) this.setMag(max); return this; }
+            static dist(v1, v2) { return Math.sqrt((v1.x - v2.x) ** 2 + (v1.y - v2.y) ** 2); }
+        }
+
+        class Boid {
+            constructor(speciesIdx) {
+                this.speciesIdx = speciesIdx;
+                this.pos = new Vector(Math.random() * width, Math.random() * height);
+                this.vel = new Vector(Math.random() * 2 - 1, Math.random() * 2 - 1).setMag(Math.random() * 2 + 1);
+                this.acc = new Vector(0, 0);
+                this.history = [];
+            }
+
+            getConfig() {
+                return speciesData[this.speciesIdx];
+            }
+
+            update() {
+                const config = this.getConfig();
+
+                // Historia
+                this.history.push({ x: this.pos.x, y: this.pos.y });
+                if (this.history.length > config.trailLength) {
+                    // Trim excess
+                    while (this.history.length > Math.max(0, config.trailLength)) {
+                        this.history.shift();
+                    }
+                }
+
+                this.pos.add(this.vel);
+                this.vel.add(this.acc);
+                this.vel.limit(config.maxSpeed);
+                this.acc.mult(0);
+
+                // Bordes: Contenedor
+                const margin = 50;
+                const turnFactor = 0.8; // Un poco más fuerte para evitar escapes rápidos
+
+                if (this.pos.x < margin) this.vel.x += turnFactor;
+                else if (this.pos.x > width - margin) this.vel.x -= turnFactor;
+
+                if (this.pos.y < margin) this.vel.y += turnFactor;
+                else if (this.pos.y > height - margin) this.vel.y -= turnFactor;
+
+                // Hard Limit
+                if (this.pos.x < 0) this.pos.x = 0;
+                if (this.pos.x > width) this.pos.x = width;
+                if (this.pos.y < 0) this.pos.y = 0;
+                if (this.pos.y > height) this.pos.y = height;
+            }
+
+            applyBehaviors(neighbors) {
+                const config = this.getConfig();
+
+                let align = new Vector(0, 0);
+                let cohesion = new Vector(0, 0);
+                let separation = new Vector(0, 0);
+                let count = 0;
+                const maxForce = 0.1; // Fuerza máxima de giro
+
+                for (let other of neighbors) {
+                    let d = Vector.dist(this.pos, other.pos);
+
+                    // Interacción entre especies? Si, todos se ven.
+                    // Podríamos agregar "racismo" de boids (solo interactúan con misma especie)
+                    // Por ahora interactúan con todos para más caos "orgánico"
+
+                    if (d > 0 && d < config.perception) {
+                        align.add(other.vel);
+                        cohesion.add(other.pos);
+
+                        let diff = new Vector(this.pos.x, this.pos.y).sub(other.pos);
+                        diff.div(d * d);
+                        separation.add(diff);
+
+                        count++;
+                    }
+                }
+
+                if (count > 0) {
+                    align.div(count).setMag(config.maxSpeed).sub(this.vel).limit(maxForce);
+                    cohesion.div(count).sub(this.pos).setMag(config.maxSpeed).sub(this.vel).limit(maxForce);
+                    separation.div(count).setMag(config.maxSpeed).sub(this.vel).limit(maxForce);
+                }
+
+                this.acc.add(align.mult(config.align));
+                this.acc.add(cohesion.mult(config.cohesion));
+                this.acc.add(separation.mult(config.separation));
+            }
+
+            draw() {
+                const config = this.getConfig();
+
+                if (config.trailLength > 1 && this.history.length > 1) {
+                    ctx.beginPath();
+                    ctx.moveTo(this.history[0].x, this.history[0].y);
+
+                    for (let i = 1; i < this.history.length; i++) {
+                        const prev = this.history[i - 1];
+                        const curr = this.history[i];
+                        const distSq = (curr.x - prev.x) ** 2 + (curr.y - prev.y) ** 2;
+
+                        if (distSq < 1000) {
+                            ctx.lineTo(curr.x, curr.y);
+                        } else {
+                            ctx.moveTo(curr.x, curr.y);
+                        }
+                    }
+
+                    // Conectar cabeza
+                    const last = this.history[this.history.length - 1];
+                    const distToHeadSq = (this.pos.x - last.x) ** 2 + (this.pos.y - last.y) ** 2;
+                    if (distToHeadSq < 1000) ctx.lineTo(this.pos.x, this.pos.y);
+
+                    ctx.strokeStyle = config.color;
+                    ctx.lineWidth = 1.5;
+                    ctx.stroke();
+                }
+
+
+                ctx.fillStyle = config.color; // Cabeza del color de la especie
+                ctx.beginPath();
+                ctx.arc(this.pos.x, this.pos.y, config.size / 2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        // --- Init System ---
+        let boids = []; // Array plano de todos los boids
+
+        function initSpecies(idx) {
+            // Eliminar boids existentes de esta especie
+            boids = boids.filter(b => b.speciesIdx !== idx);
+
+            // Crear nuevos
+            const config = speciesData[idx];
+            for (let i = 0; i < config.count; i++) {
+                boids.push(new Boid(idx));
+            }
+        }
+
+        function initAll() {
+            boids = [];
+            for (let i = 0; i < speciesData.length; i++) {
+                initSpecies(i);
+            }
+            updateUI(); // Set initial UI state
+        }
+
+        function animate() {
+            ctx.fillStyle = 'rgba(5, 5, 5, 0.3)';
+            ctx.fillRect(0, 0, width, height);
+
+            ctx.globalCompositeOperation = 'lighter';
+
+            grid.clear();
+            for (let boid of boids) {
+                grid.add(boid);
+            }
+
+            for (let boid of boids) {
+                const neighbors = grid.getNeighbors(boid);
+                boid.applyBehaviors(neighbors);
+                boid.update();
+                boid.draw();
+            }
+
+            ctx.globalCompositeOperation = 'source-over';
+            requestAnimationFrame(animate);
+        }
+
+
+        // --- Wallpaper Engine Logic ---
+
+        function weColorToHex(str) {
+            // WE sends "R G B" or "R G B A" in 0-1 range
+            const parts = str.split(' ').map(parseFloat);
+            const r = Math.floor(parts[0] * 255);
+            const g = Math.floor(parts[1] * 255);
+            const b = Math.floor(parts[2] * 255);
+            // Ignore alpha for now or use rgba
+            return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
+        }
+
+        window.wallpaperPropertyListener = {
+            applyUserProperties: function (properties) {
+                // UI Theme (schemecolor) - can be used for UI elements if desired
+                if (properties.schemecolor) {
+                    // Optional: change UI accents based on scheme color
+                }
+
+                // Iterate for Species 1 to 4
+                for (let i = 1; i <= 4; i++) {
+                    const idx = i - 1; // array index
+
+                    // Color
+                    if (properties[`s${i}_color`]) {
+                        const raw = properties[`s${i}_color`].value;
+                        speciesData[idx].color = weColorToHex(raw);
+                    }
+                    // Population (Count)
+                    if (properties[`s${i}_count`]) {
+                        const val = properties[`s${i}_count`].value;
+                        speciesData[idx].count = val;
+                        initSpecies(idx); // Respawn
+                    }
+                    // Speed
+                    if (properties[`s${i}_speed`]) {
+                        speciesData[idx].maxSpeed = properties[`s${i}_speed`].value;
+                    }
+                    // Size
+                    if (properties[`s${i}_size`]) {
+                        speciesData[idx].size = properties[`s${i}_size`].value;
+                    }
+                    // Perception
+                    if (properties[`s${i}_perception`]) {
+                        speciesData[idx].perception = properties[`s${i}_perception`].value;
+                    }
+                    // Trail
+                    if (properties[`s${i}_trail`]) {
+                        speciesData[idx].trailLength = properties[`s${i}_trail`].value;
+                    }
+                    // Align
+                    if (properties[`s${i}_align`]) {
+                        speciesData[idx].align = properties[`s${i}_align`].value;
+                    }
+                    // Cohesion
+                    if (properties[`s${i}_cohesion`]) {
+                        speciesData[idx].cohesion = properties[`s${i}_cohesion`].value;
+                    }
+                    // Separation
+                    if (properties[`s${i}_separation`]) {
+                        speciesData[idx].separation = properties[`s${i}_separation`].value;
+                    }
+                }
+
+                updateUI(); // Reflect changes in internal UI if visible
+            }
+        };
+
+        initAll();
+        animate();
+
+    </script>
+</body>
+
+</html>
